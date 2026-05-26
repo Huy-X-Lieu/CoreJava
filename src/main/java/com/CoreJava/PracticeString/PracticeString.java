@@ -78,7 +78,7 @@ public class PracticeString {
                 field.contains("\n") ||
                 field.contains("\r") ||
                 field.contains("\t") ||
-                (field.length() > field.trim().length());
+                (field.length() > field.strip().length());
     }
 
     private static boolean doesFieldContainDoubleQuotes(String field){
