@@ -34,46 +34,46 @@ public class PracticeString {
                 || ('0' <= c && c <= '9');
     }
 
-    public static String toCsvRow(String[] fields) throws NullPointerException{
+    public static String toCsvRow(String[] fields){
         if(fields == null)
             throw new NullPointerException("Array of string input cannot be " +
                     "null");
 
-        if(fields.length == 0)
-            return "";
-
         StringBuilder row = new StringBuilder();
-        char c;
-        String field;
 
         for (int index = 0; index < fields.length; index++) {
-            field = fields[index];
             if(index > 0)
                 row.append(',');
 
-            if(field == null)
-                continue;
-
-            if (doesFieldNeedDoubleQuotes(field)) {
-                row.append("\"");
-                if (field.contains("\"")) {
-                    for (int i = 0; i < field.length(); i++) {
-                        c = field.charAt(i);
-                        if (c == '\"') {
-                            row.append("\"");
-                        }
-                        row.append(c);
-                    }
-                } else {
-                    row.append(field);
-                }
-                row.append("\"");
-            } else {
-                row.append(field);
-            }
+            appendCsvField(row, fields[index]);
         }
 
         return row.toString();
+    }
+
+    private static void appendCsvField(StringBuilder row, String field){
+        if(field == null || field.isEmpty())
+            return;
+
+        if(!doesFieldNeedDoubleQuotes(field)){
+            row.append(field);
+            return;
+        }
+
+        row.append('"');
+        appendEscapedField(row, field);
+        row.append('"');
+    }
+
+    private static void appendEscapedField(StringBuilder row, String field){
+        for(int index = 0; index < field.length(); index++){
+            char c = field.charAt(index);
+
+            if(c == '"')
+                row.append('"');
+
+            row.append(c);
+        }
     }
 
     private static boolean doesFieldNeedDoubleQuotes(String field){
