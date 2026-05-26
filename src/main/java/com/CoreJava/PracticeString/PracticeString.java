@@ -34,19 +34,29 @@ public class PracticeString {
                 || ('0' <= c && c <= '9');
     }
 
-    public static String toCsvRow(String[] fields){
+    public static String toCsvRow(String[] fields) throws NullPointerException{
+        if(fields == null)
+            throw new NullPointerException("Array of string input cannot be " +
+                    "null");
+
         if(fields.length == 0)
             return "";
 
         StringBuilder row = new StringBuilder();
         char c;
+        String field;
 
-        for (String field : fields) {
-            if (field == null || field.isEmpty()) {
+        for (int index = 0; index < fields.length; index++) {
+            field = fields[index];
+            if(index > 0)
                 row.append(',');
-            }  else if (doesFieldNeedDoubleQuotes(field)) {
+
+            if(field == null)
+                continue;
+
+            if (doesFieldNeedDoubleQuotes(field)) {
                 row.append("\"");
-                if (doesFieldContainDoubleQuotes(field)) {
+                if (field.contains("\"")) {
                     for (int i = 0; i < field.length(); i++) {
                         c = field.charAt(i);
                         if (c == '\"') {
@@ -57,17 +67,11 @@ public class PracticeString {
                 } else {
                     row.append(field);
                 }
-                row.append("\",");
-            }else if (field.length() == 1) {
-                row.append(field);
-                row.append(',');
+                row.append("\"");
             } else {
                 row.append(field);
-                row.append(',');
             }
         }
-
-        row.deleteCharAt(row.length()-1);
 
         return row.toString();
     }
@@ -81,7 +85,4 @@ public class PracticeString {
                 (field.length() > field.strip().length());
     }
 
-    private static boolean doesFieldContainDoubleQuotes(String field){
-        return field.contains("\"");
-    }
 }
