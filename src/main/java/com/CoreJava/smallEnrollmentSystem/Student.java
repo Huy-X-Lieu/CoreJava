@@ -9,26 +9,9 @@ public class Student {
     public Student(String id, String name,
                    String email)throws NullPointerException,
             IllegalArgumentException{
-        if(id == null)
-            throw new NullPointerException("Student ID cannot be null");
-        if(name == null)
-            throw new NullPointerException("Student name cannot be null");
-        if(email == null)
-            throw new NullPointerException("Student email cannot be null");
-
-        if(id.isBlank())
-            throw new IllegalArgumentException("Student ID cannot be " +
-                    "blank or empty");
-        if(name.isBlank())
-            throw new IllegalArgumentException("Student name cannot be " +
-                    "blank or empty");
-        if(email.isBlank())
-            throw new IllegalArgumentException("Student email cannot be " +
-                    "blank or empty");
-
         this.studentId = normalizeStudentID(id);
         this.name = normalizeName(name);
-        this.email = email;
+        this.email = normalizeEmail(email);
     }
 
     public void setName(String name){
@@ -87,5 +70,22 @@ public class Student {
         }
 
         return normalizeId.toString();
+    }
+
+    private String normalizeEmail(String email)throws NullPointerException, IllegalArgumentException{
+        if(email == null)
+            throw new NullPointerException("Email cannot be null");
+
+        if(email.isBlank())
+            throw new IllegalArgumentException("Email cannot be blank or " +
+                    "empty");
+
+        String emailRegex =
+                "^[A-Za-z0-9]+([._+-]?[A-Za-z0-9]+)*@[A-Za-z0-9]+([.-]?[A-Za-z0-9]+)*\\.[A-Za-z]{2,}$";
+       if(!email.strip().matches(emailRegex))
+           throw new IllegalArgumentException("Email: " + email + " contains " +
+                   "invalid character(s)");
+
+       return email.strip().toLowerCase();
     }
 }
