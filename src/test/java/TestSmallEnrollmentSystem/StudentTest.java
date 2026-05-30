@@ -15,24 +15,65 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class StudentTest {
 
     @ParameterizedTest
-    @MethodSource("formatNameCases")
-    void formatNameCapitalizesEachWordAndNormalizesSpaces(String input, String expected)
+    @MethodSource("normalizeStudentIDCases")
+    void normalizeStudentIDUppercasesAndPreservesLettersAndDigits(String input, String expected)
             throws Exception {
-        assertEquals(expected, callFormatName(input));
+        assertEquals(expected, callNormalizeStudentID(input));
     }
 
     @ParameterizedTest
-    @MethodSource("invalidFormatNameCases")
-    void formatNameRejectsNonLetterNonSpaceCharacters(String input) {
-        assertThrows(IllegalArgumentException.class, () -> callFormatName(input));
+    @MethodSource("invalidNormalizeStudentIDCases")
+    void normalizeStudentIDRejectsInvalidInput(String input) {
+        assertThrows(IllegalArgumentException.class, () -> callNormalizeStudentID(input));
     }
 
     @Test
-    void formatNameAllowsSingleLetterWords() throws Exception {
-        assertEquals("A B C", callFormatName("a b c"));
+    void normalizeStudentIDRejectsNullInput() {
+        assertThrows(NullPointerException.class, () -> callNormalizeStudentID(null));
     }
 
-    private static Stream<Arguments> formatNameCases() {
+    @ParameterizedTest
+    @MethodSource("normalizeNameCases")
+    void normalizeNameCapitalizesEachWordAndNormalizesSpaces(String input, String expected)
+            throws Exception {
+        assertEquals(expected, callNormalizeName(input));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidNormalizeNameCases")
+    void normalizeNameRejectsNonLetterNonSpaceCharacters(String input) {
+        assertThrows(IllegalArgumentException.class, () -> callNormalizeName(input));
+    }
+
+    @Test
+    void normalizeNameAllowsSingleLetterWords() throws Exception {
+        assertEquals("A B C", callNormalizeName("a b c"));
+    }
+
+    private static Stream<Arguments> normalizeStudentIDCases() {
+        return Stream.of(
+                Arguments.of("S001", "S001"),
+                Arguments.of("s001", "S001"),
+                Arguments.of("  s001  ", "S001"),
+                Arguments.of("abc123", "ABC123"),
+                Arguments.of("a1b2c3", "A1B2C3")
+        );
+    }
+
+    private static Stream<Arguments> invalidNormalizeStudentIDCases() {
+        return Stream.of(
+                Arguments.of(""),
+                Arguments.of("   "),
+                Arguments.of("S 001"),
+                Arguments.of("S-001"),
+                Arguments.of("S_001"),
+                Arguments.of("S.001"),
+                Arguments.of("S/001"),
+                Arguments.of("S001!")
+        );
+    }
+
+    private static Stream<Arguments> normalizeNameCases() {
         return Stream.of(
                 Arguments.of("john", "John"),
                 Arguments.of("jOhN", "John"),
@@ -50,7 +91,7 @@ class StudentTest {
         );
     }
 
-    private static Stream<Arguments> invalidFormatNameCases() {
+    private static Stream<Arguments> invalidNormalizeNameCases() {
         return Stream.of(
                 Arguments.of("john2"),
                 Arguments.of("mary-jane"),
@@ -66,9 +107,24 @@ class StudentTest {
         );
     }
 
-    private static String callFormatName(String name) throws Exception {
+    private static String callNormalizeStudentID(String studentID) throws Exception {
         try {
-            Method method = Student.class.getDeclaredMethod("formatName", String.class);
+            Method method = Student.class.getDeclaredMethod("normalizeStudentID", String.class);
+            method.setAccessible(true);
+            Student student = new Student("s001", "placeholder", "student@example.com");
+
+            return (String) method.invoke(student, studentID);
+        } catch (ReflectiveOperationException exception) {
+            if (exception.getCause() instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+            throw exception;
+        }
+    }
+
+    private static String callNormalizeName(String name) throws Exception {
+        try {
+            Method method = Student.class.getDeclaredMethod("normalizeName", String.class);
             method.setAccessible(true);
             Student student = new Student("s001", "placeholder", "student@example.com");
 
