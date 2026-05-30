@@ -17,6 +17,21 @@ public class Student {
     public void setName(String name){
         this.name = normalizeName(name);
     }
+    public void setEmail(String email){
+        this.email = normalizeEmail(email);
+    }
+
+    public String getName(){
+       return this.name;
+    }
+
+    public String getStudentId(){
+        return this.studentId;
+    }
+
+    public String getEmail(){
+        return this.email;
+    }
 
     private String normalizeName(String name)throws IllegalArgumentException,
             NullPointerException{
@@ -87,5 +102,21 @@ public class Student {
                    "invalid character(s)");
 
        return email.strip().toLowerCase();
+    }
+
+    @Override
+    public boolean equals(Object otherObject){
+        if(this == otherObject)
+            return true;
+
+        if(!(otherObject instanceof Student otherStudent))
+            return false;
+
+        return this.studentId.equals(otherStudent.studentId);
+    }
+
+    @Override
+    public int hashCode(){
+        return this.studentId.hashCode();
     }
 }

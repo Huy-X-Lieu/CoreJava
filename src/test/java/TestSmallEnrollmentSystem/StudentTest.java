@@ -10,9 +10,53 @@ import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StudentTest {
+
+    @Test
+    void gettersReturnNormalizedConstructorValues() {
+        Student student = new Student("  s001  ", "  jOhN   dOE  ", "  STUDENT@EXAMPLE.COM  ");
+
+        assertEquals("S001", student.getStudentId());
+        assertEquals("John Doe", student.getName());
+        assertEquals("student@example.com", student.getEmail());
+    }
+
+    @Test
+    void equalsReturnsTrueForStudentsWithSameNormalizedStudentId() {
+        Student firstStudent = new Student("  s001  ", "John Doe", "john@example.com");
+        Student secondStudent = new Student("S001", "Jane Smith", "jane@example.com");
+
+        assertTrue(firstStudent.equals(secondStudent));
+        assertEquals(firstStudent, secondStudent);
+        assertEquals(firstStudent.hashCode(), secondStudent.hashCode());
+    }
+
+    @Test
+    void equalsReturnsFalseForStudentsWithDifferentStudentIds() {
+        Student firstStudent = new Student("S001", "John Doe", "john@example.com");
+        Student secondStudent = new Student("S002", "John Doe", "john@example.com");
+
+        assertFalse(firstStudent.equals(secondStudent));
+    }
+
+    @Test
+    void equalsReturnsFalseForNullAndDifferentObjectTypes() {
+        Student student = new Student("S001", "John Doe", "john@example.com");
+
+        assertFalse(student.equals(null));
+        assertFalse(student.equals("S001"));
+    }
+
+    @Test
+    void equalsReturnsTrueForSameObjectReference() {
+        Student student = new Student("S001", "John Doe", "john@example.com");
+
+        assertTrue(student.equals(student));
+    }
 
     @ParameterizedTest
     @MethodSource("normalizeStudentIDCases")
