@@ -15,6 +15,17 @@ public class Utils {
     }
 
     public static void checkStringForNullOrBlank(String str){
-        checkStringForNullOrBlank(str, "");
+        checkStringForNullOrBlank(str, "Parameter");
+    }
+
+    public static boolean doesStringContainOnlyDigits(String str){
+        checkStringForNullOrBlank(str);
+
+        for(char c : str.toCharArray()){
+            if(!Character.isDigit(c))
+                return false;
+        }
+
+        return true;
     }
 }
