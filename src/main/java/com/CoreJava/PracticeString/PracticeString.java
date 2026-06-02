@@ -14,11 +14,11 @@ public class PracticeString {
             char c = input.charAt(index);
 
             if(isAsciiLetterOrDigit(c)){
-                if(needsDash && builder.length() > 0)
+                if(needsDash)
                     builder.append('-');
                 builder.append(Character.toLowerCase(c));
                 needsDash = false;
-            } else if(builder.length() > 0){
+            } else if(!builder.isEmpty()){
                 needsDash = true;
             }
 
