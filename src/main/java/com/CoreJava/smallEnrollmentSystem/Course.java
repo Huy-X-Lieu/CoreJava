@@ -58,10 +58,8 @@ public class Course {
         return this.credit;
     }
 
-    private String normalizeCourseCode(String courseCode)throws NullPointerException,
-            IllegalArgumentException{
-        if(courseCode == null)
-            throw new NullPointerException("Course code cannot be null");
+    private String normalizeCourseCode(String courseCode)throws IllegalArgumentException{
+        Utils.checkStringForNullOrBlank(courseCode, "Course code");
 
         Matcher matcher = COURSE_CODE_PATTERN.matcher(courseCode.strip());
         if(!matcher.matches())

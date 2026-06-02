@@ -1,5 +1,6 @@
 package com.CoreJava.smallEnrollmentSystem;
 
+
 public class Student {
     private final String studentId;
     private String name;
@@ -33,14 +34,8 @@ public class Student {
         return this.email;
     }
 
-    private String normalizeName(String name)throws IllegalArgumentException,
-            NullPointerException{
-
-        if(name == null)
-            throw new NullPointerException("Student name cannot be null");
-        if(name.isBlank())
-            throw new IllegalArgumentException("Student name cannot be blank " +
-                    "or empty");
+    private String normalizeName(String name){
+        Utils.checkStringForNullOrBlank(name, "Student name");
 
         StringBuilder formatedName = new StringBuilder();
         boolean isUpperCase = true;
@@ -68,14 +63,8 @@ public class Student {
         return formatedName.toString();
     }
 
-    private String normalizeStudentID(String id)throws NullPointerException,
-            IllegalArgumentException{
-        if(id == null)
-            throw new NullPointerException("Student name cannot be null");
-        if(id.isBlank())
-            throw new IllegalArgumentException("Student name cannot be blank " +
-                    "or empty");
-
+    private String normalizeStudentID(String id){
+        Utils.checkStringForNullOrBlank(id, "Student ID");
         StringBuilder normalizeId = new StringBuilder();
         for(char c : id.strip().toUpperCase().toCharArray()){
             if(Character.isAlphabetic(c) || Character.isDigit(c))
@@ -87,13 +76,8 @@ public class Student {
         return normalizeId.toString();
     }
 
-    private String normalizeEmail(String email)throws NullPointerException, IllegalArgumentException{
-        if(email == null)
-            throw new NullPointerException("Email cannot be null");
-
-        if(email.isBlank())
-            throw new IllegalArgumentException("Email cannot be blank or " +
-                    "empty");
+    private String normalizeEmail(String email){
+        Utils.checkStringForNullOrBlank(email, "Student email");
 
         String emailRegex =
                 "^[A-Za-z0-9]+([._+-]?[A-Za-z0-9]+)*@[A-Za-z0-9]+([.-]?[A-Za-z0-9]+)*\\.[A-Za-z]{2,}$";
