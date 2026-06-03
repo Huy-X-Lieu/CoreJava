@@ -30,6 +30,7 @@ public class Section {
 
     public void setCapacity(int capacity){
         validateCapacity(capacity);
+        validateCapacityCanHoldCurrentEnrollments(capacity);
         this.capacity = capacity;
     }
 
@@ -89,9 +90,33 @@ public class Section {
                     "least 1.");
     }
 
+    private void validateCapacityCanHoldCurrentEnrollments(int capacity)
+            throws IllegalArgumentException{
+        if(capacity < enrolledStudents.size())
+            throw new IllegalArgumentException("Section capacity cannot be less " +
+                    "than the current enrollment count.");
+    }
+
     private static void validateCourse(Course course)throws NullPointerException{
         if(course == null)
             throw new NullPointerException("Course cannot be null");
     }
 
+    public boolean isSectionFull(){
+        return enrolledStudents.size() >= capacity;
+    }
+
+    public boolean addEnrolledStudent(Student student)throws NullPointerException{
+        if(student == null)
+            throw new NullPointerException("Student cannot be null");
+
+        if(isSectionFull())
+            return false;
+
+        int oldSize = enrolledStudents.size();
+
+        enrolledStudents.add(student);
+
+        return enrolledStudents.size() > oldSize;
+    }
 }

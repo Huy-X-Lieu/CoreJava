@@ -2,6 +2,7 @@ package TestSmallEnrollmentSystem;
 
 import com.CoreJava.smallEnrollmentSystem.Course;
 import com.CoreJava.smallEnrollmentSystem.Section;
+import com.CoreJava.smallEnrollmentSystem.Student;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,8 +11,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SectionTest {
 
@@ -118,6 +121,79 @@ class SectionTest {
         assertEquals(30, section.getCapacity());
     }
 
+    @Test
+    void setCapacityStoresValueEqualToCurrentEnrollmentCount() {
+        Section section = new Section(createCourse(), "001", "Jane Smith", 3);
+
+        assertTrue(section.addEnrolledStudent(createStudent("S001")));
+        assertTrue(section.addEnrolledStudent(createStudent("S002")));
+        section.setCapacity(2);
+
+        assertEquals(2, section.getCapacity());
+        assertTrue(section.isSectionFull());
+    }
+
+    @Test
+    void setCapacityRejectsCapacityBelowCurrentEnrollmentCountAndPreservesCurrentValue() {
+        Section section = new Section(createCourse(), "001", "Jane Smith", 3);
+
+        assertTrue(section.addEnrolledStudent(createStudent("S001")));
+        assertTrue(section.addEnrolledStudent(createStudent("S002")));
+
+        assertThrows(IllegalArgumentException.class, () -> section.setCapacity(1));
+
+        assertEquals(3, section.getCapacity());
+        assertEquals(2, section.getEnrolledStudents().size());
+    }
+
+    @Test
+    void addEnrolledStudentAddsNewStudentAndReturnsTrue() {
+        Section section = createSection();
+        Student student = createStudent("S001");
+
+        assertTrue(section.addEnrolledStudent(student));
+
+        assertEquals(1, section.getEnrolledStudents().size());
+        assertTrue(section.getEnrolledStudents().contains(student));
+    }
+
+    @Test
+    void addEnrolledStudentRejectsNullStudentAndPreservesEnrollments() {
+        Section section = createSection();
+
+        assertThrows(NullPointerException.class, () -> section.addEnrolledStudent(null));
+
+        assertEquals(0, section.getEnrolledStudents().size());
+    }
+
+    @Test
+    void addEnrolledStudentReturnsFalseForDuplicateStudentAndPreservesEnrollmentCount() {
+        Section section = createSection();
+        Student student = createStudent("S001");
+        Student duplicateStudent = new Student("  s001  ", "Jane Smith",
+                "jane.smith@example.com");
+
+        assertTrue(section.addEnrolledStudent(student));
+        assertFalse(section.addEnrolledStudent(duplicateStudent));
+
+        assertEquals(1, section.getEnrolledStudents().size());
+        assertTrue(section.getEnrolledStudents().contains(student));
+    }
+
+    @Test
+    void addEnrolledStudentReturnsFalseWhenSectionIsFullAndPreservesEnrollments() {
+        Section section = new Section(createCourse(), "001", "Jane Smith", 1);
+        Student firstStudent = createStudent("S001");
+        Student secondStudent = createStudent("S002");
+
+        assertTrue(section.addEnrolledStudent(firstStudent));
+        assertFalse(section.addEnrolledStudent(secondStudent));
+
+        assertEquals(1, section.getEnrolledStudents().size());
+        assertTrue(section.getEnrolledStudents().contains(firstStudent));
+        assertFalse(section.getEnrolledStudents().contains(secondStudent));
+    }
+
     private static Stream<Arguments> validSectionNumbers() {
         return Stream.of(
                 Arguments.of("001"),
@@ -154,6 +230,10 @@ class SectionTest {
 
     private static Section createSection() {
         return new Section(createCourse(), "001", "Jane Smith", 30);
+    }
+
+    private static Student createStudent(String studentId) {
+        return new Student(studentId, "John Doe", studentId.toLowerCase() + "@example.com");
     }
 
     private static Course createCourse() {
