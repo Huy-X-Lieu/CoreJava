@@ -8,6 +8,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Queue;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -194,6 +197,75 @@ class SectionTest {
         assertFalse(section.getEnrolledStudents().contains(secondStudent));
     }
 
+    @Test
+    void addStudentToWaitListAddsNewStudentAndReturnsTrue() throws Exception {
+        Section section = createSection();
+        Student student = createStudent("S001");
+
+        assertTrue(section.addStudentToWaitList(student));
+
+        assertEquals(List.of(student), waitlistSnapshot(section));
+    }
+
+    @Test
+    void addStudentToWaitListRejectsNullStudentAndPreservesWaitlist() throws Exception {
+        Section section = createSection();
+        Student student = createStudent("S001");
+
+        assertTrue(section.addStudentToWaitList(student));
+        assertThrows(NullPointerException.class, () -> section.addStudentToWaitList(null));
+
+        assertEquals(List.of(student), waitlistSnapshot(section));
+    }
+
+    @Test
+    void addStudentToWaitListReturnsFalseForDuplicateStudentIdAndPreservesOriginalStudent()
+            throws Exception {
+        Section section = createSection();
+        Student student = createStudent("S001");
+        Student duplicateStudent = new Student("  s001  ", "Jane Smith",
+                "jane.smith@example.com");
+
+        assertTrue(section.addStudentToWaitList(student));
+        assertFalse(section.addStudentToWaitList(duplicateStudent));
+
+        List<Student> waitlistedStudents = waitlistSnapshot(section);
+        assertEquals(1, waitlistedStudents.size());
+        assertSame(student, waitlistedStudents.get(0));
+    }
+
+    @Test
+    void addStudentToWaitListPreservesInsertionOrder() throws Exception {
+        Section section = createSection();
+        Student firstStudent = createStudent("S001");
+        Student secondStudent = createStudent("S002");
+        Student thirdStudent = createStudent("S003");
+
+        assertTrue(section.addStudentToWaitList(firstStudent));
+        assertTrue(section.addStudentToWaitList(secondStudent));
+        assertTrue(section.addStudentToWaitList(thirdStudent));
+
+        assertEquals(List.of(firstStudent, secondStudent, thirdStudent),
+                waitlistSnapshot(section));
+    }
+
+    @Test
+    void addStudentToWaitListAddsStudentWhenSectionIsFullWithoutChangingEnrollments()
+            throws Exception {
+        Section section = new Section(createCourse(), "001", "Jane Smith", 1);
+        Student enrolledStudent = createStudent("S001");
+        Student waitlistedStudent = createStudent("S002");
+
+        assertTrue(section.addEnrolledStudent(enrolledStudent));
+        assertTrue(section.isSectionFull());
+        assertTrue(section.addStudentToWaitList(waitlistedStudent));
+
+        assertEquals(1, section.getEnrolledStudents().size());
+        assertTrue(section.getEnrolledStudents().contains(enrolledStudent));
+        assertFalse(section.getEnrolledStudents().contains(waitlistedStudent));
+        assertEquals(List.of(waitlistedStudent), waitlistSnapshot(section));
+    }
+
     private static Stream<Arguments> validSectionNumbers() {
         return Stream.of(
                 Arguments.of("001"),
@@ -238,5 +310,14 @@ class SectionTest {
 
     private static Course createCourse() {
         return new Course("CSC 400", "Introduction to Java", 3);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Student> waitlistSnapshot(Section section) throws Exception {
+        Field waitlistField = Section.class.getDeclaredField("waitlist");
+        waitlistField.setAccessible(true);
+        Queue<Student> waitlist = (Queue<Student>) waitlistField.get(section);
+
+        return List.copyOf(waitlist);
     }
 }

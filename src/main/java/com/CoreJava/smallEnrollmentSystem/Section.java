@@ -1,6 +1,8 @@
 package com.CoreJava.smallEnrollmentSystem;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
 
 public class Section {
@@ -9,6 +11,8 @@ public class Section {
     private String instructor;
     private int capacity;
     private final Set<Student> enrolledStudents = new HashSet<>();
+    private final Queue<Student> waitlist = new ArrayDeque<>();
+    
 
     public Section(Course course, String sectionNumber, String instructor,
                    int capacity){
@@ -118,5 +122,16 @@ public class Section {
         enrolledStudents.add(student);
 
         return enrolledStudents.size() > oldSize;
+    }
+
+    public boolean addStudentToWaitList(Student student) throws NullPointerException{
+        if(student == null)
+            throw new NullPointerException("Student cannot be null");
+
+        if(this.waitlist.contains(student))
+            return false;
+
+        this.waitlist.add(student);
+        return true;
     }
 }
