@@ -146,7 +146,7 @@ class SectionTest {
         assertThrows(IllegalArgumentException.class, () -> section.setCapacity(1));
 
         assertEquals(3, section.getCapacity());
-        assertEquals(2, section.getEnrolledStudents().size());
+        assertEquals(2, section.getEnrolledList().size());
     }
 
     @Test
@@ -156,8 +156,8 @@ class SectionTest {
 
         assertTrue(section.addEnrolledStudent(student));
 
-        assertEquals(1, section.getEnrolledStudents().size());
-        assertTrue(section.getEnrolledStudents().contains(student));
+        assertEquals(1, section.getEnrolledList().size());
+        assertTrue(section.getEnrolledList().contains(student));
     }
 
     @Test
@@ -166,7 +166,7 @@ class SectionTest {
 
         assertThrows(NullPointerException.class, () -> section.addEnrolledStudent(null));
 
-        assertEquals(0, section.getEnrolledStudents().size());
+        assertEquals(0, section.getEnrolledList().size());
     }
 
     @Test
@@ -179,8 +179,8 @@ class SectionTest {
         assertTrue(section.addEnrolledStudent(student));
         assertFalse(section.addEnrolledStudent(duplicateStudent));
 
-        assertEquals(1, section.getEnrolledStudents().size());
-        assertTrue(section.getEnrolledStudents().contains(student));
+        assertEquals(1, section.getEnrolledList().size());
+        assertTrue(section.getEnrolledList().contains(student));
     }
 
     @Test
@@ -192,9 +192,9 @@ class SectionTest {
         assertTrue(section.addEnrolledStudent(firstStudent));
         assertFalse(section.addEnrolledStudent(secondStudent));
 
-        assertEquals(1, section.getEnrolledStudents().size());
-        assertTrue(section.getEnrolledStudents().contains(firstStudent));
-        assertFalse(section.getEnrolledStudents().contains(secondStudent));
+        assertEquals(1, section.getEnrolledList().size());
+        assertTrue(section.getEnrolledList().contains(firstStudent));
+        assertFalse(section.getEnrolledList().contains(secondStudent));
     }
 
     @Test
@@ -260,10 +260,95 @@ class SectionTest {
         assertTrue(section.isSectionFull());
         assertTrue(section.addStudentToWaitList(waitlistedStudent));
 
-        assertEquals(1, section.getEnrolledStudents().size());
-        assertTrue(section.getEnrolledStudents().contains(enrolledStudent));
-        assertFalse(section.getEnrolledStudents().contains(waitlistedStudent));
+        assertEquals(1, section.getEnrolledList().size());
+        assertTrue(section.getEnrolledList().contains(enrolledStudent));
+        assertFalse(section.getEnrolledList().contains(waitlistedStudent));
         assertEquals(List.of(waitlistedStudent), waitlistSnapshot(section));
+    }
+
+    @Test
+    void removeStudentFromEnrolledListRemovesExistingStudentAndReturnsTrue() {
+        Section section = createSection();
+        Student firstStudent = createStudent("S001");
+        Student secondStudent = createStudent("S002");
+
+        assertTrue(section.addEnrolledStudent(firstStudent));
+        assertTrue(section.addEnrolledStudent(secondStudent));
+
+        assertTrue(section.removeStudentFromEnrolledList(firstStudent));
+
+        assertEquals(1, section.getEnrolledList().size());
+        assertFalse(section.getEnrolledList().contains(firstStudent));
+        assertTrue(section.getEnrolledList().contains(secondStudent));
+    }
+
+    @Test
+    void removeStudentFromEnrolledListRejectsNullStudentAndPreservesState()
+            throws Exception {
+        Section section = createSection();
+        Student enrolledStudent = createStudent("S001");
+        Student waitlistedStudent = createStudent("S002");
+
+        assertTrue(section.addEnrolledStudent(enrolledStudent));
+        assertTrue(section.addStudentToWaitList(waitlistedStudent));
+
+        assertThrows(NullPointerException.class,
+                () -> section.removeStudentFromEnrolledList(null));
+
+        assertEquals(1, section.getEnrolledList().size());
+        assertTrue(section.getEnrolledList().contains(enrolledStudent));
+        assertEquals(List.of(waitlistedStudent), waitlistSnapshot(section));
+    }
+
+    @Test
+    void removeStudentFromEnrolledListReturnsFalseForStudentWhoIsNotEnrolledAndPreservesState()
+            throws Exception {
+        Section section = createSection();
+        Student enrolledStudent = createStudent("S001");
+        Student waitlistedStudent = createStudent("S002");
+        Student missingStudent = createStudent("S003");
+
+        assertTrue(section.addEnrolledStudent(enrolledStudent));
+        assertTrue(section.addStudentToWaitList(waitlistedStudent));
+
+        assertFalse(section.removeStudentFromEnrolledList(missingStudent));
+
+        assertEquals(1, section.getEnrolledList().size());
+        assertTrue(section.getEnrolledList().contains(enrolledStudent));
+        assertEquals(List.of(waitlistedStudent), waitlistSnapshot(section));
+    }
+
+    @Test
+    void removeStudentFromEnrolledListPromotesFirstWaitlistedStudent() throws Exception {
+        Section section = new Section(createCourse(), "001", "Jane Smith", 1);
+        Student enrolledStudent = createStudent("S001");
+        Student firstWaitlistedStudent = createStudent("S002");
+        Student secondWaitlistedStudent = createStudent("S003");
+
+        assertTrue(section.addEnrolledStudent(enrolledStudent));
+        assertTrue(section.addStudentToWaitList(firstWaitlistedStudent));
+        assertTrue(section.addStudentToWaitList(secondWaitlistedStudent));
+
+        assertTrue(section.removeStudentFromEnrolledList(enrolledStudent));
+
+        assertEquals(1, section.getEnrolledList().size());
+        assertFalse(section.getEnrolledList().contains(enrolledStudent));
+        assertTrue(section.getEnrolledList().contains(firstWaitlistedStudent));
+        assertEquals(List.of(secondWaitlistedStudent), waitlistSnapshot(section));
+    }
+
+    @Test
+    void removeStudentFromEnrolledListUsesStudentIdEquality() {
+        Section section = createSection();
+        Student enrolledStudent = createStudent("S001");
+        Student sameStudentId = new Student("  s001  ", "Jane Smith",
+                "jane.smith@example.com");
+
+        assertTrue(section.addEnrolledStudent(enrolledStudent));
+
+        assertTrue(section.removeStudentFromEnrolledList(sameStudentId));
+
+        assertEquals(0, section.getEnrolledList().size());
     }
 
     private static Stream<Arguments> validSectionNumbers() {

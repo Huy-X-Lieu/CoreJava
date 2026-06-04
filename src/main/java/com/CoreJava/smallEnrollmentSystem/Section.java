@@ -10,7 +10,7 @@ public class Section {
     private final String sectionNumber;
     private String instructor;
     private int capacity;
-    private final Set<Student> enrolledStudents = new HashSet<>();
+    private final Set<Student> enrolledList = new HashSet<>();
     private final Queue<Student> waitlist = new ArrayDeque<>();
     
 
@@ -54,8 +54,8 @@ public class Section {
         return this.capacity;
     }
 
-    public Set<Student> getEnrolledStudents(){
-        return Set.copyOf(this.enrolledStudents);
+    public Set<Student> getEnrolledList(){
+        return Set.copyOf(this.enrolledList);
     }
 
 
@@ -96,7 +96,7 @@ public class Section {
 
     private void validateCapacityCanHoldCurrentEnrollments(int capacity)
             throws IllegalArgumentException{
-        if(capacity < enrolledStudents.size())
+        if(capacity < enrolledList.size())
             throw new IllegalArgumentException("Section capacity cannot be less " +
                     "than the current enrollment count.");
     }
@@ -107,7 +107,7 @@ public class Section {
     }
 
     public boolean isSectionFull(){
-        return enrolledStudents.size() >= capacity;
+        return enrolledList.size() >= capacity;
     }
 
     public boolean addEnrolledStudent(Student student)throws NullPointerException{
@@ -117,11 +117,11 @@ public class Section {
         if(isSectionFull())
             return false;
 
-        int oldSize = enrolledStudents.size();
+        int oldSize = enrolledList.size();
 
-        enrolledStudents.add(student);
+        enrolledList.add(student);
 
-        return enrolledStudents.size() > oldSize;
+        return enrolledList.size() > oldSize;
     }
 
     public boolean addStudentToWaitList(Student student) throws NullPointerException{
@@ -134,4 +134,19 @@ public class Section {
         this.waitlist.add(student);
         return true;
     }
+
+    public boolean removeStudentFromEnrolledList(Student student) throws NullPointerException{
+        if(student == null)
+           throw new NullPointerException("Student cannot be null");
+        if(!enrolledList.contains(student))
+            return false;
+
+        enrolledList.remove(student);
+
+        if(!waitlist.isEmpty())
+            enrolledList.add(waitlist.remove());
+
+        return true;
+    }
+
 }
